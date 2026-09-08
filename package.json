@@ -1,0 +1,18 @@
+{
+  "name": "lyricsdisplay-fdroid",
+  "version": "1.0.0",
+  "description": "Spotify Lyrics Display - on-device Android app (Capacitor + Kotlin engine), F-Droid distribution",
+  "private": true,
+  "scripts": {
+    "sync": "cap sync android",
+    "open:android": "cap open android"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@capacitor/android": "^8.5.1",
+    "@capacitor/core": "^8.5.1"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.5.1"
+  }
+}

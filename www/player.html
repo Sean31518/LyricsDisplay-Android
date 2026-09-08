@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spotify Lyrics Display</title>
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎵</text></svg>">
+</head>
+<body class="player-page">
+
+  <!-- Top bar with track info -->
+  <header class="track-header" id="track-header">
+    <div class="track-cover-wrap">
+      <img id="track-cover" src="" alt="Cover" class="hidden">
+      <div id="track-cover-placeholder" class="cover-placeholder">♪</div>
+    </div>
+    <div class="track-meta">
+      <div id="track-name" class="track-name">–</div>
+      <div id="track-artist" class="track-artist">–</div>
+    </div>
+    <div class="header-actions">
+      <a href="settings.html" class="icon-btn" title="Lyrics verwalten">⚙</a>
+    </div>
+  </header>
+
+  <!-- Progress bar -->
+  <div class="progress-bar-wrap">
+    <div class="progress-bar" id="progress-bar"></div>
+  </div>
+
+  <!-- Main lyrics area -->
+  <main class="lyrics-main" id="lyrics-main">
+
+    <!-- Idle state -->
+    <div class="state-screen" id="state-idle">
+      <div class="state-icon">◎</div>
+      <p>Warte auf Wiedergabe…</p>
+      <p class="state-hint">Starte einen Song in Spotify</p>
+    </div>
+
+    <!-- Loading state -->
+    <div class="state-screen hidden" id="state-loading">
+      <div class="state-icon spin">◌</div>
+      <p>Lyrics werden geladen…</p>
+    </div>
+
+    <!-- No lyrics found -->
+    <div class="state-screen hidden" id="state-no-lyrics">
+      <div class="state-icon">∅</div>
+      <p>Keine Lyrics gefunden</p>
+      <p class="state-hint" id="no-lyrics-hint"></p>
+    </div>
+
+    <!-- LRCLib rate limit hit -->
+    <div class="state-screen hidden" id="state-rate-limited">
+      <div class="state-icon">⏳</div>
+      <p>LRCLib-Rate-Limit erreicht</p>
+      <p class="state-hint" id="rate-limited-hint"></p>
+      <p class="state-hint">Die Lyrics-Suche ist gerade gedrosselt – beim nächsten Song wird es erneut versucht.</p>
+    </div>
+
+    <!-- Lyrics display: synced -->
+    <div class="lyrics-container hidden" id="lyrics-synced">
+      <div class="lyrics-scroll-area" id="lyrics-scroll">
+        <div class="lyrics-inner" id="lyrics-inner">
+          <!-- Lines injected by JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Lyrics display: plain (fallback) -->
+    <div class="lyrics-container lyrics-plain-wrap hidden" id="lyrics-plain">
+      <pre id="lyrics-plain-text" class="lyrics-plain"></pre>
+    </div>
+
+  </main>
+
+  <script src="/js/player.js"></script>
+</body>
+</html>

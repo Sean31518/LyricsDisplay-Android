@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Setup Guide – Spotify Lyrics Display</title>
+  <link rel="stylesheet" href="css/main.css">
+</head>
+<body class="setup-page">
+  <div class="setup-container">
+    <a href="login.html" class="back-link">← Zurück</a>
+    <h1>🎵 Setup Guide</h1>
+    <p class="setup-intro">
+      Spotify Lyrics Display braucht eine kostenlose, selbst angelegte Spotify
+      Developer App, damit die App direkt auf diesem Gerät auf dein
+      "currently playing" zugreifen darf. Das dauert ca. 3 Minuten und muss
+      nur einmal gemacht werden.
+    </p>
+
+    <div class="setup-steps">
+
+      <div class="setup-step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h3>Spotify Developer Dashboard öffnen</h3>
+          <p>Gehe auf einem beliebigen Gerät zu <a href="https://developer.spotify.com/dashboard" target="_blank">developer.spotify.com/dashboard</a> und melde dich mit deinem normalen Spotify-Account an.</p>
+        </div>
+      </div>
+
+      <div class="setup-step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h3>Neue App erstellen</h3>
+          <p>Klicke auf <strong>„Create app"</strong> und fülle aus:</p>
+          <ul>
+            <li><strong>App name:</strong> Lyrics Display (beliebig)</li>
+            <li><strong>App description:</strong> Lyrics display for my own account</li>
+            <li><strong>Redirect URI:</strong> <code id="redirect-uri">…</code></li>
+            <li><strong>APIs used:</strong> Web API</li>
+          </ul>
+          <p>Bestätige die Terms und klicke <strong>„Save"</strong>.</p>
+        </div>
+      </div>
+
+      <div class="setup-step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h3>Client ID kopieren</h3>
+          <p>In der App-Übersicht findest du unter „Settings" die <strong>Client ID</strong>. Ein Client Secret wird nicht gebraucht – die App meldet sich per PKCE an, ganz ohne geheimen Schlüssel auf dem Gerät.</p>
+        </div>
+      </div>
+
+      <div class="setup-step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <h3>Client ID hier eintragen</h3>
+          <section class="settings-card">
+            <div class="form-row form-row-single">
+              <label>Spotify Client ID
+                <input type="text" id="f-client-id" placeholder="z.B. a1b2c3d4e5f6..." autocomplete="off" spellcheck="false">
+              </label>
+            </div>
+            <div class="editor-actions">
+              <button type="button" id="save-btn" class="btn btn-spotify btn-inline">Speichern</button>
+              <span id="form-msg" class="form-msg"></span>
+            </div>
+          </section>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="setup-faq">
+      <h2>FAQ</h2>
+      <details>
+        <summary>Brauche ich Spotify Premium?</summary>
+        <p>Nein. Die App liest nur „currently playing" – das funktioniert mit jedem Account.</p>
+      </details>
+      <details>
+        <summary>Werden meine Daten irgendwo gespeichert?</summary>
+        <p>Nein, nirgendwo extern. Spotify-Tokens und Client ID liegen verschlüsselt nur auf diesem Gerät. Lyrics werden lokal in den App-Daten gespeichert – lösch- und einsehbar über ⚙. Es gibt keinen Server und keine Übertragung außer an Spotify und LRCLib.</p>
+      </details>
+      <details>
+        <summary>Was ist LRCLib?</summary>
+        <p><a href="https://lrclib.net" target="_blank">lrclib.net</a> ist eine freie, öffentliche Lyrics-Datenbank mit synchronisierten LRC-Lyrics. Kein Account nötig, keine API-Keys.</p>
+      </details>
+      <details>
+        <summary>Warum meine eigene Spotify-App statt einer eingebauten?</summary>
+        <p>Spotify beschränkt neu angelegte Apps ohne Review auf 25 freigeschaltete Accounts. Mit einer eigenen, kostenlosen Developer-App pro Nutzer entfällt dieses Limit – und niemand außer dir hat Zugriff auf deine Zugangsdaten.</p>
+      </details>
+      <details>
+        <summary>Fullscreen auf dem TV / zweitem Monitor?</summary>
+        <p>Drücke den ⛶-Button oben rechts im Player.</p>
+      </details>
+    </div>
+  </div>
+
+  <script>
+    const LyricsEngine = Capacitor.Plugins.LyricsEngine;
+    const redirectUriEl = document.getElementById('redirect-uri');
+    const clientIdInput = document.getElementById('f-client-id');
+    const saveBtn = document.getElementById('save-btn');
+    const formMsg = document.getElementById('form-msg');
+
+    LyricsEngine.getRedirectUri().then(({ uri }) => { redirectUriEl.textContent = uri; });
+    LyricsEngine.getClientId().then(({ clientId }) => { if (clientId) clientIdInput.value = clientId; });
+
+    saveBtn.addEventListener('click', async () => {
+      const clientId = clientIdInput.value.trim();
+      if (!clientId) {
+        formMsg.textContent = 'Client ID fehlt.';
+        formMsg.className = 'form-msg is-error';
+        return;
+      }
+      try {
+        await LyricsEngine.setClientId({ clientId });
+        formMsg.textContent = 'Gespeichert.';
+        formMsg.className = 'form-msg is-ok';
+        setTimeout(() => { location.href = 'login.html'; }, 600);
+      } catch (err) {
+        formMsg.textContent = `Speichern fehlgeschlagen: ${err.message}`;
+        formMsg.className = 'form-msg is-error';
+      }
+    });
+  </script>
+</body>
+</html>

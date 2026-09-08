@@ -1,0 +1,16 @@
+# Node
+node_modules/
+
+# Android/Gradle build output (siehe auch android/.gitignore für Detailausschlüsse)
+android/local.properties
+android/.gradle/
+android/app/build/
+android/capacitor-cordova-android-plugins/build/
+android/build/
+*.keystore
+*.jks
+
+# Capacitor generiert diese Kopie aus www/ bei jedem `cap sync` neu
+android/app/src/main/assets/public/
+
+google-services.json

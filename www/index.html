@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Spotify Lyrics Display</title>
+</head>
+<body>
+  <script>
+    // Pendant zu app.get('/') in server.js: entscheidet, welcher Screen zuerst kommt.
+    Capacitor.Plugins.LyricsEngine.getStatus().then(({ configured, authenticated }) => {
+      if (authenticated) location.replace('player.html');
+      else if (configured) location.replace('login.html');
+      else location.replace('setup.html');
+    }).catch(() => location.replace('setup.html'));
+  </script>
+</body>
+</html>

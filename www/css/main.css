@@ -1,0 +1,650 @@
+/* ── Reset & Base ─────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:           #0a0a0f;
+  --bg2:          #111118;
+  --bg3:          #1a1a24;
+  --border:       #2a2a3a;
+  --text:         #e8e8f0;
+  --text-dim:     #6b6b80;
+  --text-muted:   #3a3a50;
+  --accent:       #1db954;
+  --accent-dim:   #158a3e;
+  --active-color: #ffffff;
+  --past-color:   #4a4a60;
+  --future-color: #2a2a3a;
+  --font-main:    'Segoe UI', system-ui, -apple-system, sans-serif;
+  --radius:       12px;
+  --radius-sm:    6px;
+  --header-h:     72px;
+  --progress-h:   3px;
+  --transition:   0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-main);
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+.hidden { display: none !important; }
+
+/* ── Login Page ───────────────────────────────────────────────────────────── */
+.login-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  overflow: auto;
+  background: radial-gradient(ellipse at 50% 0%, #1a2a1a 0%, var(--bg) 60%);
+}
+
+.login-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 2rem 1rem;
+  width: 100%;
+  max-width: 420px;
+}
+
+.login-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--accent);
+}
+.login-logo h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; }
+
+.login-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 2rem;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.login-card h2 { font-size: 1.25rem; font-weight: 600; }
+.login-desc { color: var(--text-dim); font-size: 0.9rem; line-height: 1.6; }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 500px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.1s, opacity 0.2s;
+  text-decoration: none;
+}
+.btn:hover { transform: scale(1.02); text-decoration: none; }
+.btn:active { transform: scale(0.98); }
+
+.btn-spotify {
+  background: var(--accent);
+  color: #000;
+  width: 100%;
+}
+.btn-spotify:hover { background: #1ed760; }
+
+.login-hint {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  text-align: center;
+  line-height: 1.5;
+}
+
+.warning, .error {
+  border-radius: var(--radius-sm);
+  padding: 0.75rem 1rem;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+.warning { background: #2a2000; border: 1px solid #554400; color: #ffcc44; }
+.error   { background: #2a0a0a; border: 1px solid #550000; color: #ff6666; }
+
+.setup-link { font-size: 0.85rem; color: var(--text-dim); }
+
+/* ── Player Page ──────────────────────────────────────────────────────────── */
+.player-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Header */
+.track-header {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  height: var(--header-h);
+  padding: 0 1.25rem;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  z-index: 10;
+}
+
+.track-cover-wrap {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--bg3);
+}
+#track-cover {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.cover-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  color: var(--text-muted);
+}
+
+.track-meta {
+  flex: 1;
+  min-width: 0;
+}
+.track-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.track-artist {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.icon-btn {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-dim);
+  font-size: 1rem;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+  text-decoration: none;
+}
+.icon-btn:hover { color: var(--text); border-color: var(--text-dim); text-decoration: none; }
+
+/* Progress bar */
+.progress-bar-wrap {
+  height: var(--progress-h);
+  background: var(--bg3);
+  flex-shrink: 0;
+}
+.progress-bar {
+  height: 100%;
+  background: var(--accent);
+  width: 0%;
+  transition: width 0.9s linear;
+}
+
+/* Lyrics main area */
+.lyrics-main {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* State screens (idle / loading / no-lyrics) */
+.state-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  text-align: center;
+  color: var(--text-dim);
+  padding: 2rem;
+}
+.state-icon {
+  font-size: 3rem;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+  line-height: 1;
+}
+.state-hint { font-size: 0.85rem; color: var(--text-muted); }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+.spin { display: inline-block; animation: spin 1.2s linear infinite; }
+
+/* Synced lyrics scroll area */
+.lyrics-container {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.lyrics-scroll-area {
+  width: 100%;
+  max-width: 800px;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  /* Hide scrollbar visually but keep it functional */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  position: relative;
+}
+.lyrics-scroll-area::-webkit-scrollbar { display: none; }
+
+/* Top/bottom gradient fade — on the scroll container */
+.lyrics-scroll-area::before,
+.lyrics-scroll-area::after {
+  content: '';
+  position: sticky;
+  left: 0; right: 0;
+  height: 120px;
+  pointer-events: none;
+  z-index: 2;
+  display: block;
+  flex-shrink: 0;
+}
+.lyrics-scroll-area::before {
+  top: 0;
+  background: linear-gradient(to bottom, var(--bg) 0%, transparent 100%);
+  margin-bottom: -120px;
+}
+.lyrics-scroll-area::after {
+  bottom: 0;
+  background: linear-gradient(to top, var(--bg) 0%, transparent 100%);
+  margin-top: -120px;
+}
+
+.lyrics-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 50vh 2rem;
+  gap: 0;
+}
+
+/* Individual lyric lines */
+.lyric-line {
+  flex-shrink: 0;
+  padding: 0.35rem 0;
+  font-size: clamp(1.1rem, 3vw, 2rem);
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+  text-align: center;
+  color: var(--future-color);
+  transition:
+    color var(--transition),
+    transform var(--transition),
+    opacity var(--transition);
+  cursor: default;
+  user-select: none;
+}
+
+.lyric-line.past {
+  color: var(--past-color);
+  transform: scale(0.95);
+}
+
+.lyric-line.active {
+  color: var(--active-color);
+  transform: scale(1.06);
+  text-shadow: 0 0 40px rgba(29, 185, 84, 0.25);
+}
+
+.lyric-line.near-active {
+  color: var(--text-dim);
+  transform: scale(1.01);
+}
+
+.lyric-line.empty-line {
+  height: 1.2rem;
+  font-size: 0;
+}
+
+/* Plain lyrics fallback */
+.lyrics-plain-wrap {
+  overflow-y: auto;
+  padding: 2rem;
+}
+.lyrics-plain {
+  font-family: var(--font-main);
+  font-size: clamp(0.9rem, 2vw, 1.3rem);
+  line-height: 1.8;
+  white-space: pre-wrap;
+  text-align: center;
+  color: var(--text-dim);
+  max-width: 700px;
+}
+
+/* ── Setup Page ───────────────────────────────────────────────────────────── */
+.setup-page {
+  overflow: auto;
+  min-height: 100vh;
+  background: var(--bg);
+}
+.setup-container {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem 4rem;
+}
+.setup-container h1 { font-size: 1.8rem; margin-bottom: 0.5rem; }
+.setup-intro { color: var(--text-dim); margin-bottom: 2rem; line-height: 1.6; }
+.back-link { display: inline-block; margin-bottom: 1.5rem; font-size: 0.9rem; color: var(--text-dim); }
+
+.setup-steps { display: flex; flex-direction: column; gap: 1.25rem; }
+.setup-step {
+  display: flex;
+  gap: 1rem;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.5rem;
+}
+.step-num {
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  background: var(--accent);
+  color: #000;
+  font-weight: 700;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+}
+.step-content { flex: 1; min-width: 0; }
+.step-content h3 { font-size: 1rem; margin-bottom: 0.4rem; }
+.step-content p, .step-content li { font-size: 0.88rem; color: var(--text-dim); line-height: 1.6; }
+.step-content ul { padding-left: 1.2rem; margin-top: 0.3rem; }
+.step-content li { margin-bottom: 0.2rem; }
+.step-content strong { color: var(--text); }
+
+.code-block {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem 1rem;
+  font-size: 0.82rem;
+  font-family: 'Consolas', 'Fira Code', monospace;
+  color: #a8d8b0;
+  overflow-x: auto;
+  margin-top: 0.5rem;
+  white-space: pre;
+}
+
+code {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  padding: 0.1em 0.4em;
+  border-radius: 4px;
+  font-size: 0.85em;
+  font-family: 'Consolas', 'Fira Code', monospace;
+  color: #a8d8b0;
+}
+
+.setup-faq { margin-top: 2.5rem; }
+.setup-faq h2 { font-size: 1.2rem; margin-bottom: 1rem; }
+details {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  margin-bottom: 0.5rem;
+  padding: 0.75rem 1rem;
+}
+summary {
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.9rem;
+  list-style: none;
+}
+summary::before { content: '+ '; color: var(--accent); }
+details[open] summary::before { content: '− '; }
+
+/* Kategorien/Karten mit eigenem .disclosure-arrow-Pfeil (Settings-Seite):
+   sowohl den generischen +/- Vorher-Text als auch Chromiums nativen
+   Details-Marker hart abschalten - !important, weil hier zuverlässig gegen
+   die generische Regel UND einen möglichen nativen UA-Marker gewinnen muss,
+   nicht nur gegen eine der beiden Quellen. */
+.settings-category summary::before,
+.settings-card summary::before {
+  content: none !important;
+}
+.settings-category summary::-webkit-details-marker,
+.settings-card summary::-webkit-details-marker,
+.settings-category summary::marker,
+.settings-card summary::marker {
+  display: none !important;
+}
+
+/* Große aufklappbare Settings-Kategorien (Konto/Lyrics) - enthalten eigene
+   .settings-card-Boxen, brauchen also keinen zweiten Rahmen/Hintergrund */
+details.settings-category {
+  background: none;
+  border: none;
+  padding: 0;
+  margin-bottom: 1.5rem;
+}
+details.settings-category > summary {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--text);
+  padding-bottom: 0.6rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+details p {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  line-height: 1.6;
+}
+
+/* ── Settings Page (Lyrics-Verwaltung) ────────────────────────────────────── */
+.settings-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  margin-bottom: 1.25rem;
+}
+.settings-card h2 { font-size: 1.05rem; margin-bottom: 1rem; }
+.settings-card summary { font-size: 1.05rem; color: var(--text); }
+.settings-card[open] summary { margin-bottom: 1rem; }
+
+.disclosure-arrow {
+  display: inline-block;
+  color: var(--accent);
+  transition: transform 0.15s ease;
+}
+/* Direkter Kind-Kombinator (> statt Leerzeichen): sonst dreht ein offenes
+   äußeres <details> (z.B. die Lyrics-Kategorie) auch die Pfeile verschachtelter,
+   noch zugeklappter innerer <details> (Gespeicherte Lyrics) fälschlich mit. */
+details[open] > summary > .disclosure-arrow { transform: rotate(90deg); }
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+@media (max-width: 600px) { .form-row { grid-template-columns: 1fr; } }
+.form-row.form-row-single { grid-template-columns: 1fr; }
+
+.form-row label, .lyrics-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  min-width: 0;
+}
+.lyrics-label { margin-top: 0.9rem; }
+
+.settings-card input[type="text"],
+.settings-card textarea {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  padding: 0.55rem 0.75rem;
+  font-size: 0.9rem;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s;
+  width: 100%;
+  min-width: 0;
+}
+.settings-card input[type="text"]:focus,
+.settings-card textarea:focus { border-color: var(--accent-dim); }
+
+.settings-card textarea {
+  font-family: 'Consolas', 'Fira Code', monospace;
+  font-size: 0.85rem;
+  line-height: 1.55;
+  resize: vertical;
+  min-height: 180px;
+}
+
+.btn-small {
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  padding: 0.4rem 0.8rem;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  transition: color 0.2s, border-color 0.2s;
+}
+.btn-small:hover { color: var(--text); border-color: var(--text-dim); }
+
+.card-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+.card-header-row h2 { margin-bottom: 0; }
+
+.detect-badge {
+  display: inline-block;
+  margin-top: 0.6rem;
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+  border-radius: 500px;
+  padding: 0.25rem 0.75rem;
+}
+.detect-badge.is-synced { color: var(--accent); border-color: var(--accent-dim); }
+.detect-badge.is-plain  { color: var(--text); }
+
+.editor-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+.btn-inline { width: auto; padding: 0.6rem 1.5rem; font-size: 0.85rem; }
+
+.form-msg { font-size: 0.82rem; }
+.form-msg.is-ok    { color: var(--accent); }
+.form-msg.is-error { color: #ff6666; }
+
+.count-badge { color: var(--text-dim); font-size: 0.85rem; font-weight: 400; }
+
+.entry-list { display: flex; flex-direction: column; }
+.entry-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0;
+  border-bottom: 1px solid var(--border);
+}
+.entry-row:last-child { border-bottom: none; }
+
+.entry-meta { flex: 1; min-width: 0; }
+.entry-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.entry-artist {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.entry-badges { display: flex; gap: 0.4rem; flex-shrink: 0; }
+.badge {
+  font-size: 0.68rem;
+  border-radius: 500px;
+  padding: 0.15rem 0.55rem;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+.badge-sync   { color: var(--accent); border-color: var(--accent-dim); }
+.badge-custom { color: #d8b04a; border-color: #6a5820; }
+@media (max-width: 600px) { .entry-badges { display: none; } }
+
+.entry-actions { display: flex; gap: 0.4rem; flex-shrink: 0; }
+.entry-empty { color: var(--text-dim); font-size: 0.85rem; }
+
+/* ── Scrollbar ────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* ── Fullscreen ───────────────────────────────────────────────────────────── */
+:fullscreen .track-header { background: var(--bg); }
+:fullscreen body { background: var(--bg); }

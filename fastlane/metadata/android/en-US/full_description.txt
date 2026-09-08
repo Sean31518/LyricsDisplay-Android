@@ -1,0 +1,27 @@
+Lyrics Display shows synchronized, line-by-line karaoke-style lyrics for the
+song currently playing on your Spotify account — entirely on your device,
+with no server or cloud backend involved.
+
+Features:
+
+* Synced lyrics (via LRCLib), with a plain-text fallback when no synced
+  version is available
+* Homescreen widget showing the current lyric line, resizable, with
+  adjustable font size
+* Local lyrics library: view, edit, delete or manually add lyrics
+  (LRC-timed or plain text, auto-detected)
+* Background sync via a foreground service, so the widget stays current
+  even while the app itself is closed
+* Own Spotify Developer app per user (PKCE login, no shared client, no
+  25-user review limit some third-party Spotify apps run into)
+
+Setup requires a free Spotify account and a few minutes to create your own
+Spotify Developer app (guided step-by-step inside the app) — no Spotify
+Premium required.
+
+Note: the app's interface is currently German-only.
+
+Privacy: no analytics, no trackers, no account system of its own. Spotify
+tokens and your Spotify Client ID are stored encrypted on-device
+(EncryptedSharedPreferences) and never leave the device except to talk to
+the Spotify API and LRCLib directly.

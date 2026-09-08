@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Gleiche Palette wie www/css/main.css (Tokens bg2, text, text-dim, accent) -->
+    <color name="widget_bg">#111118</color>
+    <color name="widget_config_bg">#0a0a0f</color>
+    <color name="widget_text">#e8e8f0</color>
+    <color name="widget_text_dim">#6b6b80</color>
+    <color name="widget_accent">#1db954</color>
+</resources>

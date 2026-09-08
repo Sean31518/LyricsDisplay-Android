@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  updatePeriodMillis=0: keine periodischen Auto-Updates - der Foreground
+  Service pusht Updates aktiv über AppWidgetManager, sobald sich Song/Zeile
+  ändern (siehe LyricsWidgetProvider.updateAll).
+-->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:minWidth="200dp"
+    android:minHeight="110dp"
+    android:minResizeWidth="200dp"
+    android:minResizeHeight="40dp"
+    android:updatePeriodMillis="0"
+    android:initialLayout="@layout/widget_lyrics"
+    android:configure="de.lyricsdisplay.app.widget.LyricsWidgetConfigActivity"
+    android:resizeMode="horizontal|vertical"
+    android:widgetCategory="home_screen"
+    android:widgetFeatures="reconfigurable" />

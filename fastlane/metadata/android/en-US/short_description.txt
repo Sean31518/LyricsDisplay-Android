@@ -1,0 +1,1 @@
+Synced Spotify lyrics with a homescreen widget, running fully on-device.
