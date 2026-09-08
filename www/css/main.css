@@ -644,7 +644,3 @@ details[open] > summary > .disclosure-arrow { transform: rotate(90deg); }
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-
-/* ── Fullscreen ───────────────────────────────────────────────────────────── */
-:fullscreen .track-header { background: var(--bg); }
-:fullscreen body { background: var(--bg); }
