@@ -1,0 +1,46 @@
+# DRAFT F-Droid-Recipe für die spätere Merge-Request in das fdroiddata-Repo
+# (https://gitlab.com/fdroid/fdroiddata) - liegt hier nur als Referenz/Vorlage,
+# ist NICHT die tatsächliche fdroiddata-Datei (die entsteht erst durch die MR
+# dort unter metadata/de.lyricsdisplay.app.yml).
+#
+# Vor dem Einreichen zu prüfen/anzupassen:
+# - Der Tag `v1.0` muss im Repo existieren und exakt versionCode/versionName
+#   aus android/app/build.gradle entsprechen.
+# - Titel/Kurz-/Volltextbeschreibung zieht F-Droid automatisch aus
+#   fastlane/metadata/android/en-US/ in DIESEM Repo - hier nicht duplizieren.
+# - Icon + Screenshots müssen im Repo vorhanden sein, bevor eingereicht wird.
+
+Categories:
+  - Multimedia
+License: MIT
+AuthorName: Sean Corcoran
+SourceCode: https://github.com/Sean31518/LyricsDisplay-Android
+IssueTracker: https://github.com/Sean31518/LyricsDisplay-Android/issues
+
+# Die App spricht mit der proprietären Spotify-Web-API (nur Lesezugriff auf
+# "currently playing"), sonst keine proprietären/Tracking-Abhängigkeiten.
+AntiFeatures:
+  - NonFreeNet
+
+AutoName: Lyrics Display
+Repo: https://github.com/Sean31518/LyricsDisplay-Android.git
+RepoType: git
+
+Builds:
+  - versionName: '1.0'
+    versionCode: 1
+    commit: v1.0
+    subdir: android
+    # www/ wird per Capacitor in android/app/src/main/assets/public kopiert -
+    # dieser Ordner ist bewusst .gitignored (generiert), muss also vor dem
+    # Gradle-Build einmal erzeugt werden.
+    init:
+      - npm install
+      - npx cap sync android
+    gradle:
+      - yes
+
+AutoUpdateMode: Version
+UpdateCheckMode: Tags
+CurrentVersion: '1.0'
+CurrentVersionCode: 1
