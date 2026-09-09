@@ -7,6 +7,12 @@ const dom = {
   saveClientId:  $('save-client-id-btn'),
   clientIdMsg:   $('client-id-msg'),
   logoutBtn:     $('logout-btn'),
+  diagDetails:     $('diagnostics-details'),
+  diagRefreshBtn:  $('diag-refresh-btn'),
+  diagLastPoll:    $('diag-last-poll'),
+  diagLastSuccess: $('diag-last-success'),
+  diagRateLimit:   $('diag-rate-limit'),
+  diagLastError:   $('diag-last-error'),
   editorTitle: $('editor-title'),
   name:        $('f-name'),
   artist:      $('f-artist'),
@@ -58,6 +64,54 @@ async function saveClientId() {
   } catch (err) {
     dom.clientIdMsg.textContent = `Speichern fehlgeschlagen: ${err.message}`;
     dom.clientIdMsg.className = 'form-msg is-error';
+  }
+}
+
+/* ── Diagnose ─────────────────────────────────────────────────────────────
+   Zeigt den zuletzt vom nativen Poller beobachteten Status direkt in der
+   App (Rate-Limit, Token-/Netzwerkfehler) - Pendant zum Mitschauen per
+   adb logcat, nur ohne Rechner/USB-Kabel nötig. */
+function fmtTimestamp(ms) {
+  if (!ms) return '–';
+  const diffSec = Math.max(0, Math.round((Date.now() - ms) / 1000));
+  const rel = diffSec < 60 ? `vor ${diffSec}s`
+    : diffSec < 3600 ? `vor ${Math.round(diffSec / 60)}min`
+    : diffSec < 86400 ? `vor ${Math.round(diffSec / 3600)}h`
+    : `vor ${Math.round(diffSec / 86400)}d`;
+  return `${new Date(ms).toLocaleTimeString('de-DE')} (${rel})`;
+}
+
+function fmtRateLimit(untilMs) {
+  if (!untilMs || untilMs <= Date.now()) return { text: 'kein aktives Rate-Limit', warn: false };
+  const remainingSec = Math.round((untilMs - Date.now()) / 1000);
+  const h = Math.floor(remainingSec / 3600);
+  const m = Math.floor((remainingSec % 3600) / 60);
+  const s = remainingSec % 60;
+  const parts = [h && `${h}h`, (h || m) && `${m}min`, `${s}s`].filter(Boolean);
+  const until = new Date(untilMs).toLocaleString('de-DE');
+  return { text: `aktiv, noch ${parts.join(' ')} (bis ${until})`, warn: true };
+}
+
+async function loadDiagnostics() {
+  try {
+    const d = await LyricsEngine.getDiagnostics();
+    dom.diagLastPoll.textContent = fmtTimestamp(d.lastPollAt);
+    dom.diagLastSuccess.textContent = fmtTimestamp(d.lastSuccessAt);
+
+    const rl = fmtRateLimit(d.rateLimitedUntil);
+    dom.diagRateLimit.textContent = rl.text;
+    dom.diagRateLimit.className = rl.warn ? 'is-warn' : '';
+
+    if (d.lastError) {
+      dom.diagLastError.textContent = `${d.lastError} — ${fmtTimestamp(d.lastErrorAt)}`;
+      dom.diagLastError.className = 'is-error';
+    } else {
+      dom.diagLastError.textContent = 'keiner';
+      dom.diagLastError.className = '';
+    }
+  } catch (err) {
+    dom.diagLastError.textContent = `Diagnose konnte nicht geladen werden: ${err.message}`;
+    dom.diagLastError.className = 'is-error';
   }
 }
 
@@ -235,8 +289,11 @@ dom.useCurrent.addEventListener('click', useCurrent);
 dom.saveClientId.addEventListener('click', saveClientId);
 dom.logoutBtn.addEventListener('click', logout);
 dom.lrclibLink.addEventListener('click', () => LyricsEngine.openUrl({ url: 'https://lrclib.net' }));
+dom.diagRefreshBtn.addEventListener('click', loadDiagnostics);
+dom.diagDetails.addEventListener('toggle', () => { if (dom.diagDetails.open) loadDiagnostics(); });
 
 updateDetectBadge();
 checkAuth();
 loadClientId();
 loadList();
+if (dom.diagDetails.open) loadDiagnostics();

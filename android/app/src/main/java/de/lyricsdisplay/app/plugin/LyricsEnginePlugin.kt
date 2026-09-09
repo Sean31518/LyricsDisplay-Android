@@ -11,6 +11,7 @@ import com.getcapacitor.PluginMethod
 import com.getcapacitor.annotation.CapacitorPlugin
 import de.lyricsdisplay.app.engine.Engine
 import de.lyricsdisplay.app.engine.EngineBus
+import de.lyricsdisplay.app.engine.EngineDiagnostics
 import de.lyricsdisplay.app.engine.Lrc
 import de.lyricsdisplay.app.engine.LyricsEntry
 import de.lyricsdisplay.app.engine.LyricsForegroundService
@@ -75,6 +76,22 @@ class LyricsEnginePlugin : Plugin() {
         ret.put("configured", Engine.auth.isConfigured())
         ret.put("authenticated", Engine.auth.isAuthenticated())
         ret.put("engineRunning", EngineBus.isEngineRunning)
+        call.resolve(ret)
+    }
+
+    /**
+     * Poll-Diagnose für die Einstellungen - damit sich Probleme (Rate-Limit,
+     * abgelaufene Tokens, Netzwerkfehler) direkt in der App nachvollziehen
+     * lassen, ohne adb/logcat zu brauchen.
+     */
+    @PluginMethod
+    fun getDiagnostics(call: PluginCall) {
+        val ret = JSObject()
+        ret.put("lastPollAt", EngineDiagnostics.lastPollAt)
+        ret.put("lastSuccessAt", EngineDiagnostics.lastSuccessAt)
+        ret.put("lastError", EngineDiagnostics.lastError)
+        ret.put("lastErrorAt", EngineDiagnostics.lastErrorAt)
+        ret.put("rateLimitedUntil", EngineDiagnostics.rateLimitedUntil)
         call.resolve(ret)
     }
 

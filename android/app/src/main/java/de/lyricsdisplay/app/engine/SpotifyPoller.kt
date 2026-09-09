@@ -147,8 +147,12 @@ class SpotifyPoller(private val auth: SpotifyAuthManager) {
     }
 
     private fun fetchCurrentlyPlaying(): PollResult {
+        EngineDiagnostics.recordPollAttempt()
+
         if (!auth.refreshIfNeeded()) {
-            Log.w(TAG, "fetchCurrentlyPlaying: refreshIfNeeded() failed, skipping poll")
+            val msg = "refreshIfNeeded() fehlgeschlagen"
+            Log.w(TAG, "fetchCurrentlyPlaying: $msg, skipping poll")
+            EngineDiagnostics.recordError(msg)
             return PollResult.Success(null)
         }
         val tokens = auth.getTokens() ?: return PollResult.Success(null)
@@ -165,10 +169,15 @@ class SpotifyPoller(private val auth: SpotifyAuthManager) {
 
             val code = connection.responseCode
             when {
-                code == 204 || code == 404 -> PollResult.Success(null) // nichts läuft gerade
+                code == 204 || code == 404 -> {
+                    EngineDiagnostics.recordSuccess()
+                    PollResult.Success(null) // nichts läuft gerade
+                }
                 code == 401 -> {
                     // Access-Token trotz Refresh ungültig (z.B. Autorisierung entzogen)
-                    Log.w(TAG, "fetchCurrentlyPlaying: HTTP 401 trotz Refresh - logge aus")
+                    val msg = "HTTP 401 trotz Refresh - ausgeloggt"
+                    Log.w(TAG, "fetchCurrentlyPlaying: $msg")
+                    EngineDiagnostics.recordError(msg)
                     auth.logout()
                     PollResult.Success(null)
                 }
@@ -177,21 +186,29 @@ class SpotifyPoller(private val auth: SpotifyAuthManager) {
                     val retryAfterSec = rawRetryAfter?.toLongOrNull()
                         ?.coerceIn(MIN_RATE_LIMIT_RETRY_SEC, MAX_RATE_LIMIT_RETRY_SEC)
                         ?: DEFAULT_RATE_LIMIT_RETRY_SEC
-                    Log.w(TAG, "fetchCurrentlyPlaying: HTTP 429 (Rate-Limit) - Retry-After Header=$rawRetryAfter, warte ${retryAfterSec}s")
-                    PollResult.RateLimited(retryAfterSec * 1000)
+                    val retryAfterMs = retryAfterSec * 1000
+                    val msg = "Spotify Rate-Limit (429) - Retry-After Header=$rawRetryAfter, warte ${retryAfterSec}s"
+                    Log.w(TAG, "fetchCurrentlyPlaying: $msg")
+                    EngineDiagnostics.recordRateLimited(System.currentTimeMillis() + retryAfterMs, msg)
+                    PollResult.RateLimited(retryAfterMs)
                 }
                 code !in 200..299 -> {
                     val err = connection.errorStream?.bufferedReader(Charsets.UTF_8)?.use { it.readText() }
-                    Log.w(TAG, "fetchCurrentlyPlaying: HTTP $code - $err")
+                    val msg = "HTTP $code - $err"
+                    Log.w(TAG, "fetchCurrentlyPlaying: $msg")
+                    EngineDiagnostics.recordError(msg)
                     PollResult.Success(null)
                 }
                 else -> {
+                    EngineDiagnostics.recordSuccess()
                     val body = connection.inputStream.bufferedReader(Charsets.UTF_8).use { it.readText() }
                     PollResult.Success(parseCurrentlyPlaying(body))
                 }
             }
         } catch (e: Exception) {
-            Log.w(TAG, "fetchCurrentlyPlaying: Exception", e)
+            val msg = "Exception: ${e.message}"
+            Log.w(TAG, "fetchCurrentlyPlaying: $msg", e)
+            EngineDiagnostics.recordError(msg)
             PollResult.Success(null)
         } finally {
             connection?.disconnect()

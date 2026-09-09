@@ -504,6 +504,18 @@ details p {
    noch zugeklappter innerer <details> (Gespeicherte Lyrics) fälschlich mit. */
 details[open] > summary > .disclosure-arrow { transform: rotate(90deg); }
 
+.diag-list {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.35rem 1rem;
+  font-size: 0.85rem;
+  margin-bottom: 1rem;
+}
+.diag-list dt { color: var(--text-dim); }
+.diag-list dd { margin: 0; word-break: break-word; }
+.diag-list dd.is-warn { color: #ffcc44; }
+.diag-list dd.is-error { color: #ff6666; }
+
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;

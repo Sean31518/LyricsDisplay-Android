@@ -168,7 +168,9 @@ class SpotifyAuthManager(private val context: Context) {
             )
             val json = body?.let { JSONObject(it) }
             if (status !in 200..299 || json == null || json.has("error")) {
-                Log.w(TAG, "refreshNow: HTTP $status - $body")
+                val msg = "Token-Refresh fehlgeschlagen: HTTP $status - $body"
+                Log.w(TAG, "refreshNow: $msg")
+                EngineDiagnostics.recordError(msg)
                 // Refresh-Token widerrufen - nicht bei jedem Poll-Tick neu versuchen
                 if (json?.optString("error") == "invalid_grant") logout()
                 false
@@ -178,7 +180,9 @@ class SpotifyAuthManager(private val context: Context) {
                 true
             }
         } catch (e: Exception) {
-            Log.w(TAG, "refreshNow: Exception", e)
+            val msg = "Token-Refresh Exception: ${e.message}"
+            Log.w(TAG, "refreshNow: $msg", e)
+            EngineDiagnostics.recordError(msg)
             false
         }
     }

@@ -77,6 +77,22 @@
           <span id="client-id-msg" class="form-msg"></span>
         </div>
       </section>
+
+      <!-- Diagnose -->
+      <details class="settings-card" id="diagnostics-details">
+        <summary><span class="disclosure-arrow">▸</span> Diagnose</summary>
+        <dl class="diag-list">
+          <dt>Letzter Poll-Versuch</dt>
+          <dd id="diag-last-poll">–</dd>
+          <dt>Letzter erfolgreicher Poll</dt>
+          <dd id="diag-last-success">–</dd>
+          <dt>Rate-Limit</dt>
+          <dd id="diag-rate-limit">–</dd>
+          <dt>Letzter Fehler</dt>
+          <dd id="diag-last-error">–</dd>
+        </dl>
+        <button type="button" id="diag-refresh-btn" class="btn-small">Aktualisieren</button>
+      </details>
     </details>
   </div>
 
