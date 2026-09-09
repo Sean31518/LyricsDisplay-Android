@@ -1,5 +1,6 @@
 package de.lyricsdisplay.app.engine
 
+import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -37,9 +38,21 @@ sealed class PollerEvent {
 class SpotifyPoller(private val auth: SpotifyAuthManager) {
 
     companion object {
+        private const val TAG = "SpotifyPoller"
         private const val TRACK_POLL_INTERVAL_MS = 3000L
         private const val PROGRESS_POLL_INTERVAL_MS = 1000L
         private const val TIMEOUT_MS = 8000
+
+        // Spotify liefert bei 429 i.d.R. einen Retry-After-Header - als Fallback
+        // falls der fehlt, und als Ober-/Untergrenze gegen kaputte/absurde Werte.
+        private const val DEFAULT_RATE_LIMIT_RETRY_SEC = 30L
+        private const val MIN_RATE_LIMIT_RETRY_SEC = 5L
+        private const val MAX_RATE_LIMIT_RETRY_SEC = 300L
+    }
+
+    private sealed class PollResult {
+        data class Success(val track: Track?) : PollResult()
+        data class RateLimited(val retryAfterMs: Long) : PollResult()
     }
 
     private var job: Job? = null
@@ -76,27 +89,40 @@ class SpotifyPoller(private val auth: SpotifyAuthManager) {
 
     private suspend fun trackLoop() {
         while (kotlinx.coroutines.currentCoroutineContext().isActive) {
-            val track = fetchCurrentlyPlaying()
-
-            if (track == null) {
-                if (currentState != null) {
-                    currentState = null
-                    isPlaying = false
-                    _events.emit(PollerEvent.Stopped)
+            when (val result = fetchCurrentlyPlaying()) {
+                is PollResult.RateLimited -> {
+                    if (currentState != null) {
+                        currentState = null
+                        isPlaying = false
+                        _events.emit(PollerEvent.Stopped)
+                    }
+                    // Bei 429 NICHT im üblichen 3s-Takt weiterpollen - das würde
+                    // das Rate-Limit-Fenster nur verlängern statt es abklingen
+                    // zu lassen.
+                    delay(result.retryAfterMs)
                 }
-            } else {
-                val prevId = currentState?.id
-                currentState = track
-                lastProgressMs = track.progressMs
-                lastTimestamp = System.currentTimeMillis()
-                isPlaying = track.isPlaying
+                is PollResult.Success -> {
+                    val track = result.track
+                    if (track == null) {
+                        if (currentState != null) {
+                            currentState = null
+                            isPlaying = false
+                            _events.emit(PollerEvent.Stopped)
+                        }
+                    } else {
+                        val prevId = currentState?.id
+                        currentState = track
+                        lastProgressMs = track.progressMs
+                        lastTimestamp = System.currentTimeMillis()
+                        isPlaying = track.isPlaying
 
-                if (track.id != prevId) {
-                    _events.emit(PollerEvent.TrackChanged(track))
+                        if (track.id != prevId) {
+                            _events.emit(PollerEvent.TrackChanged(track))
+                        }
+                    }
+                    delay(TRACK_POLL_INTERVAL_MS)
                 }
             }
-
-            delay(TRACK_POLL_INTERVAL_MS)
         }
     }
 
@@ -112,9 +138,12 @@ class SpotifyPoller(private val auth: SpotifyAuthManager) {
         }
     }
 
-    private fun fetchCurrentlyPlaying(): Track? {
-        if (!auth.refreshIfNeeded()) return null
-        val tokens = auth.getTokens() ?: return null
+    private fun fetchCurrentlyPlaying(): PollResult {
+        if (!auth.refreshIfNeeded()) {
+            Log.w(TAG, "fetchCurrentlyPlaying: refreshIfNeeded() failed, skipping poll")
+            return PollResult.Success(null)
+        }
+        val tokens = auth.getTokens() ?: return PollResult.Success(null)
 
         var connection: HttpURLConnection? = null
         return try {
@@ -128,20 +157,33 @@ class SpotifyPoller(private val auth: SpotifyAuthManager) {
 
             val code = connection.responseCode
             when {
-                code == 204 || code == 404 -> null // nichts läuft gerade
+                code == 204 || code == 404 -> PollResult.Success(null) // nichts läuft gerade
                 code == 401 -> {
                     // Access-Token trotz Refresh ungültig (z.B. Autorisierung entzogen)
+                    Log.w(TAG, "fetchCurrentlyPlaying: HTTP 401 trotz Refresh - logge aus")
                     auth.logout()
-                    null
+                    PollResult.Success(null)
                 }
-                code !in 200..299 -> null
+                code == 429 -> {
+                    val retryAfterSec = connection.getHeaderField("Retry-After")?.toLongOrNull()
+                        ?.coerceIn(MIN_RATE_LIMIT_RETRY_SEC, MAX_RATE_LIMIT_RETRY_SEC)
+                        ?: DEFAULT_RATE_LIMIT_RETRY_SEC
+                    Log.w(TAG, "fetchCurrentlyPlaying: HTTP 429 (Rate-Limit) - retry in ${retryAfterSec}s")
+                    PollResult.RateLimited(retryAfterSec * 1000)
+                }
+                code !in 200..299 -> {
+                    val err = connection.errorStream?.bufferedReader(Charsets.UTF_8)?.use { it.readText() }
+                    Log.w(TAG, "fetchCurrentlyPlaying: HTTP $code - $err")
+                    PollResult.Success(null)
+                }
                 else -> {
                     val body = connection.inputStream.bufferedReader(Charsets.UTF_8).use { it.readText() }
-                    parseCurrentlyPlaying(body)
+                    PollResult.Success(parseCurrentlyPlaying(body))
                 }
             }
         } catch (e: Exception) {
-            null
+            Log.w(TAG, "fetchCurrentlyPlaying: Exception", e)
+            PollResult.Success(null)
         } finally {
             connection?.disconnect()
         }

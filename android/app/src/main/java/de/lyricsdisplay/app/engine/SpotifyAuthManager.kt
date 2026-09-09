@@ -3,6 +3,7 @@ package de.lyricsdisplay.app.engine
 import android.content.Context
 import android.net.Uri
 import android.util.Base64
+import android.util.Log
 import androidx.browser.customtabs.CustomTabsIntent
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
@@ -22,6 +23,7 @@ import java.security.SecureRandom
 class SpotifyAuthManager(private val context: Context) {
 
     companion object {
+        private const val TAG = "SpotifyAuthManager"
         const val REDIRECT_URI = "de.lyricsdisplay.app://callback"
         private const val SCOPES = "user-read-currently-playing user-read-playback-state"
         private const val AUTHORIZE_URL = "https://accounts.spotify.com/authorize"
@@ -166,6 +168,7 @@ class SpotifyAuthManager(private val context: Context) {
             )
             val json = body?.let { JSONObject(it) }
             if (status !in 200..299 || json == null || json.has("error")) {
+                Log.w(TAG, "refreshNow: HTTP $status - $body")
                 // Refresh-Token widerrufen - nicht bei jedem Poll-Tick neu versuchen
                 if (json?.optString("error") == "invalid_grant") logout()
                 false
@@ -175,6 +178,7 @@ class SpotifyAuthManager(private val context: Context) {
                 true
             }
         } catch (e: Exception) {
+            Log.w(TAG, "refreshNow: Exception", e)
             false
         }
     }
