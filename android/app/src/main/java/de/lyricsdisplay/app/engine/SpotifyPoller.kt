@@ -43,11 +43,19 @@ class SpotifyPoller(private val auth: SpotifyAuthManager) {
         private const val PROGRESS_POLL_INTERVAL_MS = 1000L
         private const val TIMEOUT_MS = 8000
 
-        // Spotify liefert bei 429 i.d.R. einen Retry-After-Header - als Fallback
-        // falls der fehlt, und als Ober-/Untergrenze gegen kaputte/absurde Werte.
+        // Spotifys Rate-Limit-Fenster ist laut Doku eigentlich nur 30s rollierend -
+        // ein Retry-After deutlich darüber bedeutet, dass Spotify nach wiederholten
+        // Überschreitungen eine LÄNGERE Sperre verhängt hat. Beim Testen live
+        // beobachtet: Retry-After=35047 (≈9,7h) nach stundenlangem 3s-Takt-Polling
+        // während der Entwicklung. Den Header-Wert daher vertrauensvoll respektieren
+        // (Spotifys eigene Empfehlung: "wait for the number of seconds specified in
+        // Retry-After") statt künstlich zu deckeln - ein zu niedriges Cap führt nur
+        // dazu, dass der nächste Versuch erneut in die (dann eher noch länger
+        // werdende) Sperre läuft. MAX ist nur eine Notbremse gegen einen kaputten/
+        // absurden Header-Wert, keine echte Grenze für den Normalfall.
         private const val DEFAULT_RATE_LIMIT_RETRY_SEC = 30L
         private const val MIN_RATE_LIMIT_RETRY_SEC = 5L
-        private const val MAX_RATE_LIMIT_RETRY_SEC = 300L
+        private const val MAX_RATE_LIMIT_RETRY_SEC = 86_400L // 24h
     }
 
     private sealed class PollResult {
@@ -165,10 +173,11 @@ class SpotifyPoller(private val auth: SpotifyAuthManager) {
                     PollResult.Success(null)
                 }
                 code == 429 -> {
-                    val retryAfterSec = connection.getHeaderField("Retry-After")?.toLongOrNull()
+                    val rawRetryAfter = connection.getHeaderField("Retry-After")
+                    val retryAfterSec = rawRetryAfter?.toLongOrNull()
                         ?.coerceIn(MIN_RATE_LIMIT_RETRY_SEC, MAX_RATE_LIMIT_RETRY_SEC)
                         ?: DEFAULT_RATE_LIMIT_RETRY_SEC
-                    Log.w(TAG, "fetchCurrentlyPlaying: HTTP 429 (Rate-Limit) - retry in ${retryAfterSec}s")
+                    Log.w(TAG, "fetchCurrentlyPlaying: HTTP 429 (Rate-Limit) - Retry-After Header=$rawRetryAfter, warte ${retryAfterSec}s")
                     PollResult.RateLimited(retryAfterSec * 1000)
                 }
                 code !in 200..299 -> {
