@@ -3,6 +3,7 @@ node_modules/
 
 # Android/Gradle build output (siehe auch android/.gitignore für Detailausschlüsse)
 android/local.properties
+android/.idea/
 android/.gradle/
 android/app/build/
 android/capacitor-cordova-android-plugins/build/
@@ -14,3 +15,6 @@ android/build/
 android/app/src/main/assets/public/
 
 google-services.json
+
+# Rohe Screenshots vor der Auswahl/Einsortierung in fastlane/metadata/
+media/
