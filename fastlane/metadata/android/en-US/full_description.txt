@@ -25,3 +25,7 @@ Privacy: no analytics, no trackers, no account system of its own. Spotify
 tokens and your Spotify Client ID are stored encrypted on-device
 (EncryptedSharedPreferences) and never leave the device except to talk to
 the Spotify API and LRCLib directly.
+
+AI disclosure: this app was built with AI assistance (Claude) — concept,
+design and testing by the developer, with much of the code written with AI
+help. Fully open source, source available on GitHub.

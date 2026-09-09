@@ -6,6 +6,11 @@ Gerät. Verwandtes Projekt: [`../LyricsDisplay`](../LyricsDisplay) ist die
 ursprüngliche self-hosted Docker/Browser-Variante (Server + WebSocket, für
 TV/Browser-Nutzung ohne Handy).
 
+> 🤖 **KI-Hinweis**: Diese App wurde mit Unterstützung von KI (Claude)
+> entwickelt — Konzept, Design und Tests stammen von Sean Corcoran, ein
+> Großteil des Codes wurde mit KI-Hilfe geschrieben. Der Quellcode ist
+> vollständig einsehbar.
+
 ## Features
 
 - **Synchronisierte Lyrics** — line-by-line Karaoke-Highlighting via LRCLib

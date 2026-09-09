@@ -116,6 +116,7 @@ a:hover { text-decoration: underline; }
 }
 .warning { background: #2a2000; border: 1px solid #554400; color: #ffcc44; }
 .error   { background: #2a0a0a; border: 1px solid #550000; color: #ff6666; }
+.notice  { background: var(--bg2); border: 1px solid var(--border); color: var(--text-dim); }
 
 .setup-link { font-size: 0.85rem; color: var(--text-dim); }
 
